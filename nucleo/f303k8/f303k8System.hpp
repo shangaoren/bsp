@@ -51,9 +51,7 @@ public:
 	{
 		//prevent to initialise system a second time
 		if(s_initialised)
-			return false;
-		else
-			s_initialised = true;
+			return true;
 
 		uint32_t timeout = 100;
 
@@ -62,7 +60,8 @@ public:
 		if((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_1)
 			return false;
 
-		RCC->CR |= RCC_CR_HSEBYP | RCC_CR_HSEON;
+		RCC->CR |= RCC_CR_HSEBYP;
+		RCC->CR |= RCC_CR_HSEON;
 
 		while((RCC->CR & RCC_CR_HSERDY) != RCC_CR_HSERDY)
 		{
@@ -70,14 +69,15 @@ public:
 			if(timeout == 0)
 				return false;
 		}
+		
 
 		RCC->CFGR = ((RCC->CFGR & ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLMUL)) | (RCC_CFGR_PLLSRC_HSE_PREDIV | RCC_CFGR_PLLMUL9));
-		RCC->CFGR2 = ((RCC->CFGR2 & ~(RCC_CFGR2_PREDIV)) | (RCC_CFGR2_PREDIV_1));
+		RCC->CFGR2 = ((RCC->CFGR2 & ~(RCC_CFGR2_PREDIV)) | (RCC_CFGR2_PREDIV_DIV1));
 
 		RCC->CR |= RCC_CR_PLLON;
 
 		timeout = 100;
-		while((RCC->CR & RCC_CR_HSERDY) != RCC_CR_HSERDY)
+		while((RCC->CR & RCC_CR_PLLRDY) != RCC_CR_PLLRDY)
 		{
 			timeout--;
 			if(timeout == 0)
@@ -91,7 +91,7 @@ public:
 		RCC->CFGR = ((RCC->CFGR & ~(RCC_CFGR_SW)) | (RCC_CFGR_SW_PLL));
 
 		timeout = 100;
-		while((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS)
+		while((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL)
 		{
 			timeout--;
 			if(timeout == 0)
@@ -101,6 +101,7 @@ public:
 		s_systemCoreClock = 72000000;
 		s_peripheralClock1 = 36000000;
 		s_peripheralClock2 = 72000000;
+		s_initialised = true;
 		return true;
 	}
 
