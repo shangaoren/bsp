@@ -28,6 +28,7 @@ Software without prior written authorization from Florian GERARD
 
 #pragma once
 #ifdef STM32L432xx
+#include <cstdint>
 #include "yggdrasil/interfaces/ISystem.hpp"
 #include "yggdrasil/processor/st/l4/stm32l432xx.h"
 
@@ -38,17 +39,17 @@ namespace nucleo
 namespace l432kc
 {
 
-class System : public interface::ISystem
+class System : public interfaces::ISystem
 {
 public:
 
-	static bool initSystemClock()
+	bool initSystemClock() override
 	{
 		//test if was already initialized
 		if(s_initialized != false)
-			return false;
-		else
-			s_initialized = true;
+			return true;
+
+		
 		uint32_t timeout;
 		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_4WS;
 		if ((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_4WS)
@@ -88,6 +89,10 @@ public:
 		}
 
 		s_systemCoreClock = 80000000;
+		s_peripheralClock1 = 80000000;
+		s_peripheralClock2 = 80000000;
+		s_initialized = true; //initialisation finished without errors
+		return true;
 	}
 
 
@@ -106,7 +111,7 @@ public:
 		return s_peripheralClock2;
 	}
 
-	System& instance()
+	static System& instance()
 	{
 		return s_instance;
 	}

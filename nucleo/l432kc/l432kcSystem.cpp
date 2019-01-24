@@ -27,6 +27,7 @@ Software without prior written authorization from Florian GERARD
 */
 
 #ifdef STM32L432xx
+#include "l432kcSystem.hpp"
 namespace bsp
 {
 namespace nucleo
